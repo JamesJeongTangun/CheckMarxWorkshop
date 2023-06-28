@@ -16,40 +16,28 @@ import javax.servlet.http.HttpServletRequest;
 // Class Declaration
 class Login
 {
-    public static void main(String[] args)   
-    {
-        try {
-            String email = request.getParameter("email");
-            String token = request.getParameter("password");
+    public int getUserId(HttpServletRequest request) 
+        throws ServletException, IOException {
+    int userId = 0;
+    
+    String userName = request.getParameter("UserName");
+    String sql = "SELECT [UserID] FROM [AppUsers] WHERE [UserName] = '" + userName + "' " ;
 
-
-            String sql = "select * from users where (email ='" + email +"' and password ='" + token + "')";
-            Connection connection = pool.getConnection();
-            Statement statement = connection.createStatement();
-
-            HttpSession session = request.getSession();
-            String role = (String)session.getAttribute("role");
-            if (role.equals(ADMIN)) {
-                ResultSet result = statement.executeQuery(sql);
-
-                statement.close();
-                connection.close();
-            }
-
-            if (result.next()) {
-                loggedIn = true;
-                // Successfully logged in and redirect to user profile page
-            
-            } else {
-             // Auth failure - Redirect to Login Page
-            }
-        }
-        catch (SQLException ex) {
-            handleExceptions(ex);
-        }
-        finally {
-            statement.close();
-            connection.close();
-        }
+    try {
+        Connection conn = getConnection(); 
+        Statement stmt = conn.createStatement(); 
+        ResultSet data = stmt.executeQuery(sql);
+        
+        userId = data.getInt(1);        
+    } catch (SQLException ex) {
+        handleExceptions(ex);
     }
+    finally {
+        closeQuietly(data);
+        closeQuietly(stmt);
+        closeQuietly(conn);
+    }
+    
+    return userId;
+        }
 } 
