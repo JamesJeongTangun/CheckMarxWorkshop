@@ -21,23 +21,25 @@ class Login
     int userId = 0;
     
     String userName = request.getParameter("UserName");
-    String sql = "SELECT [UserID] FROM [AppUsers] WHERE [UserName] = '" + userName + "' " ;
+    String sqlStoredProc = "{call getUserId (?, ?)}";
 
     try {
         Connection conn = getConnection(); 
-        Statement stmt = conn.createStatement(); 
-        ResultSet data = stmt.executeQuery(sql);
+        CallableStatement stmt = conn.prepareCall(sqlStoredProc); 
         
-        userId = data.getInt(1);        
+        stmt.setString(1, userName);         
+        stmt.registerOutParameter(2, java.sql.Types.INTEGER);
+
+        stmt.execute();
+        userId = stmt.getInt(2);
     } catch (SQLException ex) {
         handleExceptions(ex);
     }
     finally {
-        closeQuietly(data);
         closeQuietly(stmt);
         closeQuietly(conn);
     }
     
     return userId;
-        }
+}
 } 
